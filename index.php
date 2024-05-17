@@ -41,13 +41,13 @@
             <!-- Brand -->
             <a href="<?= $urlRoot ?>" title="Messenger" class="d-none d-xl-block mb-6">
                 <svg version="1.1" width="46px" height="46px" fill="currentColor" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 46 46" enable-background="new 0 0 46 46" xml:space="preserve">
-                    <polygon opacity="0.7" points="45,11 36,11 35.5,1 "></polygon>
-                    <polygon points="35.5,1 25.4,14.1 39,21 "></polygon>
-                    <polygon opacity="0.4" points="17,9.8 39,21 17,26 "></polygon>
-                    <polygon opacity="0.7" points="2,12 17,26 17,9.8 "></polygon>
-                    <polygon opacity="0.7" points="17,26 39,21 28,36 "></polygon>
-                    <polygon points="28,36 4.5,44 17,26 "></polygon>
-                    <polygon points="17,26 1,26 10.8,20.1 "></polygon>
+                    <polygon opacity="0.7" points="45,11 36,11 35.5,1"></polygon>
+                    <polygon points="35.5,1 25.4,14.1 39,21"></polygon>
+                    <polygon opacity="0.4" points="17,9.8 39,21 17,26"></polygon>
+                    <polygon opacity="0.7" points="2,12 17,26 17,9.8"></polygon>
+                    <polygon opacity="0.7" points="17,26 39,21 28,36"></polygon>
+                    <polygon points="28,36 4.5,44 17,26"></polygon>
+                    <polygon points="17,26 1,26 10.8,20.1"></polygon>
                 </svg>
 
             </a>
@@ -102,7 +102,7 @@
 
 
                 <!-- Chats -->
-                <div class="tab-pane fade h-100 show active" id="tab-content-chats" role="tabpanel">
+                <div class="tab-pane fade h-100 show active survey-container" id="tab-content-chats" role="tabpanel">
                     <div class="d-flex flex-column h-100 position-relative">
                         <div class="hide-scrollbar">
 
@@ -116,7 +116,7 @@
                                 <!-- Chats -->
                                 <div class="card-list userList">
                                     <!-- Card -->
-                                    <div id="survey" class="card border-0 text-reset">
+                                    <div id="survey" class="card border-0 text-reset js-survey">
                                         <!-- Survey data will be dynamically added here -->
                                     </div>
 
@@ -131,7 +131,7 @@
         <!-- Sidebar -->
 
         <!-- main start -->
-        <main id="start" class="main">
+        <main id="start" class="main js-start">
             <div class="container h-100">
                 <div class="d-flex flex-column h-100 justify-content-center text-center">
                     <div class="mb-6">
@@ -149,16 +149,16 @@
         </main>
 
         <!-- Survey section -->
-        <main id="mainSurvey" class="main is-visible d-none" data-dropzone-area="">
+        <main id="mainSurvey" class="main is-visible d-none js-mainSurvey" data-dropzone-area="">
             <div class="container h-100">
                 <div class="d-flex flex-column h-100 position-relative">
                     <!-- Chat: Header -->
-                    <div class="chat-header border-bottom py-4 py-lg-7">
+                    <div class="chat-header border-bottom py-4 py-lg-7 js-header">
                         <div class="row align-items-center">
-                            <div class="col-auto">
-                                <div id="mainSurvey" class="d-flex align-items-center">
-                                    <h5 class="text-truncate me-10" id="surveyTitle"></h5>
-                                    <div class="dropdown me-10">
+                            <div class="col">
+                                <div id="mainSurvey" class="d-flex flex-column flex-md-row align-items-center">
+                                    <h5 class="text-truncate mb-3 me-md-3" id="surveyTitle"></h5>
+                                    <div class="dropdown mb-3 me-md-3">
                                         <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             Change survey status
                                         </button>
@@ -167,14 +167,20 @@
                                             <a class="dropdown-item" onclick="updateDropdownText('Unread')">Unread</a>
                                         </div>
                                         <input type="hidden" id="selectedStatus" name="selectedStatus" value="">
-                                        <button type="submit" onclick="changeSurveyStatus()" class="btn btn-primary">Submit</button>
                                     </div>
-
+                                    <div class="d-flex flex-row">
+                                        <button type="submit" onclick="changeSurveyStatus()" class="btn btn-primary me-3">Submit</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
+
+
+
+
+
+
                     <!-- Chat: Header -->
                     <!-- Chat: Content -->
                     <div class="chat-body hide-scrollbar flex-1 h-100">
@@ -187,12 +193,12 @@
                     </div>
                     <!-- Chat: Content -->
                     <!-- Chat: Footer -->
-                    <div id="footer" class="chat-footer pb-3 pb-lg-7 position-absolute bottom-0 start-0">
+                    <div id="footer" class="chat-footer pb-3 pb-lg-7 position-absolute bottom-0 start-0 js-footer">
                         <div class="dz-preview bg-dark" id="dz-preview-row" data-horizontal-scroll="">
                         </div>
 
                         <!-- Chat: Form -->
-                        <form id="responseForm" class="chat-form rounded-pill bg-dark" onsubmit="sendMessage(event, '<?= $surveyId ?>')">
+                        <form id="responseForm" class="chat-form rounded-pill bg-dark js-responseform d-none" onsubmit="sendMessage(event, '<?= $surveyId ?>')">
                             <div class="row align-items-center gx-0">
 
                                 <div class="col-auto ">

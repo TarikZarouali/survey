@@ -10165,8 +10165,7 @@
                     }
                     ,
                     b.getElements = function(e, t) {
-                        console.log(e);
-                        console.log(t);
+                       
                         var n, i;
                         if (e instanceof Array) {
                             i = [];
