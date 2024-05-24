@@ -20,6 +20,6 @@ try {
     exit;
 }
 
-$urlRoot = 'https://' . ($_SERVER['HTTP_HOST'] ?? '') . '/surveyapp/';
+$urlRoot = 'https://' . ($_SERVER['HTTP_HOST'] ?? '') . '/survey/';
 
 $surveyId = $_GET['surveyId'] ?? NULL;

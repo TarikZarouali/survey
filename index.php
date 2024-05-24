@@ -66,17 +66,31 @@
                     </a>
                 </li>
 
+                <!-- SURVEYS -->
+                <li class="nav-item">
+                    <a class="nav-link py-0 py-lg-8 active" id="js-surveysTabLink" href="#tab-content-chats" title="Chats" data-bs-toggle="tab" role="tab" aria-selected="true">
+                        <div class="icon icon-xl icon-badged">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-square">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            <div class="badge badge-circle bg-primary" id="js-surveysCountBadge">
+                                <span id="js-surveysCount"></span>
+                            </div>
+                        </div>
+                    </a>
+                </li>
 
 
-                <!-- Switcher -->
+
+                <!-- LIGHT MODE DARK MODE SWITCH -->
                 <li class="nav-item d-none d-xl-block">
                     <a class="switcher-btn nav-link py-0 py-lg-8" title="Themes">
-                        <div class="switcher-icon switcher-icon-dark icon icon-xl d-none" data-theme-mode="dark">
+                        <div class="switcher-icon switcher-icon-dark icon icon-xl" data-theme-mode="dark">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon">
                                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                             </svg>
                         </div>
-                        <div class="switcher-icon switcher-icon-light icon icon-xl" data-theme-mode="light">
+                        <div class="switcher-icon switcher-icon-light icon icon-xl d-none" data-theme-mode="light">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun">
                                 <circle cx="12" cy="12" r="5"></circle>
                                 <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -91,6 +105,24 @@
                         </div>
                     </a>
                 </li>
+
+
+                <!-- SETTINGS  -->
+                <li class="nav-item">
+                    <a class="nav-link py-0 py-lg-8" id="js-settingsTabLink" href="#tab-content-settings" title="Settings" data-bs-toggle="tab" role="tab">
+                        <div class="icon icon-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                        </div>
+                    </a>
+                </li>
+
+
+
+
+
             </ul>
         </nav>
 
@@ -102,7 +134,7 @@
 
 
                 <!-- Chats -->
-                <div class="tab-pane fade h-100 show active survey-container" id="tab-content-chats" role="tabpanel">
+                <div class="tab-pane fade h-100 show active survey-container js-surveysTab" id="tab-content-chats" role="tabpanel">
                     <div class="d-flex flex-column h-100 position-relative">
                         <div class="hide-scrollbar">
 
@@ -112,16 +144,105 @@
                                     <h2 class="fw-bold m-0">Surveys</h2>
                                 </div>
 
-
                                 <!-- Chats -->
                                 <div class="card-list userList">
                                     <!-- Card -->
                                     <div id="survey" class="card border-0 text-reset js-survey">
                                         <!-- Survey data will be dynamically added here -->
                                     </div>
-
-
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SETTINGS -->
+                <div class="tab-pane fade h-100 active show js-settingsTab" id="tab-content-settings" role="tabpanel">
+                    <div class="d-flex flex-column h-100">
+                        <div class="hide-scrollbar">
+                            <div class="container py-8">
+
+                                <!-- Title -->
+                                <div class="mb-8">
+                                    <h2 class="fw-bold m-0">Settings</h2>
+                                </div>
+
+
+                                <!-- Account -->
+                                <div class="mt-8">
+                                    <div class="d-flex align-items-center mb-4 px-6">
+                                        <small class="text-muted me-auto">Account</small>
+                                    </div>
+
+                                    <div class="card border-0">
+                                        <div class="card-body py-2">
+                                            <!-- Accordion -->
+                                            <div class="accordion accordion-flush" id="accordion-profile">
+                                                <div class="accordion-item">
+                                                    <div class="accordion-header" id="accordion-profile-1">
+                                                        <a href="#" class="accordion-button text-reset collapsed" data-bs-toggle="collapse" data-bs-target="#accordion-profile-body-1" aria-expanded="false" aria-controls="accordion-profile-body-1">
+                                                            <div>
+                                                                <h5>Survey settings</h5>
+                                                                <p>Change the amount of fetching latest surveys</p>
+                                                            </div>
+                                                        </a>
+                                                    </div>
+
+                                                    <div id="accordion-profile-body-1" class="accordion-collapse collapse" aria-labelledby="accordion-profile-1" data-parent="#accordion-profile" style="">
+                                                        <div class="accordion-body">
+                                                            <div class="form-floating mb-6">
+                                                                <input type="number" class="form-control" id="js-surveyAmount" placeholder="Amount">
+                                                                <label for="js-surveyAmount">Amount</label> <!-- Corrected for attribute to match the input ID -->
+                                                            </div>
+
+                                                            <button type="button" class="btn btn-block btn-lg btn-primary w-100" onclick="saveMaxSurveysAmount()">Save</button> <!-- Added onclick event to trigger the function -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+
+                                                <!-- Switch -->
+                                                <div class="accordion-item">
+                                                    <div class="accordion-header mb-3"> <!-- Added mb-3 class for margin bottom -->
+                                                        <div class="row align-items-center">
+                                                            <div class="col">
+                                                                <h5>Appearance</h5>
+                                                                <p>Choose light or dark theme</p>
+                                                            </div>
+                                                            <div class="col-auto">
+                                                                <a class="switcher-btn text-reset" title="Themes">
+                                                                    <div class="switcher-icon switcher-icon-dark icon icon-lg" data-theme-mode="dark">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon">
+                                                                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                                                        </svg>
+                                                                    </div>
+                                                                    <div class="switcher-icon switcher-icon-light icon icon-lg d-none" data-theme-mode="light">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun">
+                                                                            <circle cx="12" cy="12" r="5"></circle>
+                                                                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                                                                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                                                                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                                                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                                                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                                                                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                                                                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                                                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                                                        </svg>
+                                                                    </div>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Account -->
+
+
+
                             </div>
                         </div>
                     </div>
@@ -156,6 +277,14 @@
                     <div class="chat-header border-bottom py-4 py-lg-7 js-header">
                         <div class="row align-items-center">
                             <div class="col">
+                                <!-- Mobile: close -->
+                                <div class="col-2 d-xl-none">
+                                    <a class="icon icon-lg text-muted" href="<?= $urlRoot ?>" data-toggle-chat="">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-left">
+                                            <polyline points="15 18 9 12 15 6"></polyline>
+                                        </svg>
+                                    </a>
+                                </div>
                                 <div id="mainSurvey" class="d-flex flex-column flex-md-row align-items-center">
                                     <h5 class="text-truncate mb-3 me-md-3" id="surveyTitle"></h5>
                                     <div class="dropdown mb-3 me-md-3">
@@ -176,12 +305,6 @@
                         </div>
                     </div>
 
-
-
-
-
-
-                    <!-- Chat: Header -->
                     <!-- Chat: Content -->
                     <div class="chat-body hide-scrollbar flex-1 h-100">
                         <div class="chat-body-inner" style="padding-bottom: 87px">

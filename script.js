@@ -3,14 +3,27 @@ const URL_ROOT = document.currentScript.getAttribute("URL_ROOT");
 var currentURL = window.location.href;
 var parts = currentURL.split("/");
 var localhostIndex = parts.indexOf("localhost");
-var id = parts[localhostIndex + 2];
+var id = parts[localhostIndex + 3];
 
 const mainSurvey = document.getElementById("mainSurvey");
 const surveyContainer = document.getElementById("survey");
 const start = document.getElementById("start");
 const chatFooter = document.getElementById("footer");
 const chatHeader = document.querySelector("js-header");
-const deleteButton = document.querySelector("js-delete-button");
+const deleteButton = document.querySelector("js-delete");
+const editButton = document.querySelector("js-edit");
+const surveysTabLink = document.getElementById("js-surveysTabLink");
+const settingsTabLink = document.getElementById("js-settingsTabLink");
+const surveysTab = document.querySelector(".js-surveysTab");
+const settingsTab = document.querySelector(".js-settingsTab");
+
+surveysTabLink.addEventListener("click", async () => {
+  window.history.pushState(null, null, "/survey/" + "read/");
+});
+
+settingsTabLink.addEventListener("click", async () => {
+  window.history.pushState(null, null, "/survey/" + "settings/");
+});
 
 function redirectToRoot() {
   window.location.href = URL_ROOT;
@@ -30,7 +43,15 @@ document.addEventListener("keydown", function (event) {
   }
 });
 
+async function saveMaxSurveysAmount() {
+
+  const surveyAmount = document.getElementById("js-surveyAmount").value;
+  localStorage.setItem("maxSurveys", surveyAmount);
+
+}
+
 async function fetchSurveys() {
+  var maxSurveysAmount = localStorage.getItem("maxSurveys");
   try {
     const call = await fetch(URL_ROOT + "ajax.php", {
       method: "POST",
@@ -40,6 +61,7 @@ async function fetchSurveys() {
       body: JSON.stringify({
         scope: "survey",
         action: "getSurveys",
+        maxSurveysAmount: maxSurveysAmount
       }),
     });
     const response = await call.json();
@@ -50,12 +72,47 @@ async function fetchSurveys() {
   }
 }
 
+async function countSurveys() {
+
+  try {
+      const call = await fetch(URL_ROOT + "ajax.php", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+              scope: "countSurveys",
+              action: "selectCountSurveys",
+          }),
+      });
+
+      const response = await call.json();
+      if (response.status === '200') {
+          const count = response.data;
+
+          
+          // Update the count badge
+          const countBadge = document.querySelector('#js-surveysTabLink .badge span');
+          if(count > 0){
+            countBadge.innerText = count;
+            countBadge.style.display = 'block';
+          }else{
+            countBadge.innerText = 0
+          }
+      } else {
+          console.error("Error fetching surveys:", response.message);
+      }
+  } catch (error) {
+      console.error("Error fetching surveys:", error);
+  }
+}
 async function changeSurveyStatus() {
   var selectedStatus = document.getElementById("selectedStatus").value;
 
+  console.log(selectedStatus);
   const url = window.location.href;
   const parts = url.split("/");
-  const surveyNumber = parts[4];
+  const surveyNumber = parts[5];
 
   try {
     const call = await fetch(URL_ROOT + "ajax.php", {
@@ -161,13 +218,11 @@ async function drawSurveys() {
           // Get the survey ID from the clicked survey element
           const surveyNumber = survey.surveyNumber;
 
-          // Await the changeSurveyStatusToRead function
           await changeSurveyStatusToRead(surveyNumber);
 
           const statusElement = surveyElement.querySelector(".survey-status");
-          survey.surveyStatus = "read"; 
+          survey.surveyStatus = "read";
           statusElement.textContent = survey.surveyStatus;
-          console.log(statusElement);
           statusElement.classList.remove("bg-success");
           statusElement.classList.add("bg-info");
 
@@ -175,7 +230,7 @@ async function drawSurveys() {
           window.history.pushState(
             null,
             null,
-            "/surveyapp/" + surveyNumber + "/"
+            "/survey/" + "read/" + surveyNumber + "/"
           );
           drawSurveyData(surveyNumber);
         });
@@ -226,6 +281,10 @@ async function drawSurveyData(surveyNumber) {
     for (let i = 0; i < surveys.length; i++) {
       const survey = surveys[i];
 
+      // Create survey container
+      const surveyContainer = document.createElement("div");
+      surveyContainer.classList.add("survey-container");
+
       // Update survey title
       const surveyTitleElement = document.querySelector(
         "#mainSurvey .text-truncate"
@@ -240,18 +299,18 @@ async function drawSurveyData(surveyNumber) {
 
       // Populate question text
       questionElement.innerHTML = `
-    <div class="message-inner">
-      <div class="message-body">
-        <div class="message-content">
-          <div class="message-text">
-            <p><strong>Q:</strong> ${questionText}</p>
+        <div class="message-inner">
+          <div class="message-body">
+            <div class="message-content">
+              <div class="message-text">
+                <p><strong>Q:</strong> ${questionText}</p>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>`;
+        </div>`;
 
-      // Append question to survey body
-      surveyBodyElement.appendChild(questionElement);
+      // Append question to survey container
+      surveyContainer.appendChild(questionElement);
 
       const answerText = survey.surveyAnswer;
 
@@ -261,18 +320,18 @@ async function drawSurveyData(surveyNumber) {
 
       // Populate answer text
       answerElement.innerHTML = `
-    <div class="message-inner">
-      <div class="message-body">
-        <div class="message-content">
-          <div class="message-text">
-            <p><strong>A:</strong> ${answerText}</p>
+        <div class="message-inner">
+          <div class="message-body">
+            <div class="message-content">
+              <div class="message-text">
+                <p><strong>A:</strong> ${answerText}</p>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>`;
+        </div>`;
 
-      // Append answer to survey body
-      surveyBodyElement.appendChild(answerElement);
+      // Append answer to survey container
+      surveyContainer.appendChild(answerElement);
 
       const responseText = survey.surveyResponse;
 
@@ -283,16 +342,44 @@ async function drawSurveyData(surveyNumber) {
 
         // Populate response text
         responseElement.innerHTML = `
-      <div class="message-inner">
-        <div class="message-body">
-          <div class="message-content">
-            <div class="message-text">
-              <p><strong>R:</strong> ${responseText}</p>
+          <div class="message-inner">
+            <div class="message-body">
+              <div class="message-content">
+                <div class="message-text">
+                  <p><strong>R:</strong> ${responseText}</p>
+                </div>
+                <div class="message-action">
+                  <div class="dropdown">
+                      <a class="icon text-muted" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                      </a>
+                      <ul class="dropdown-menu">
+                          <li>
+                              <button class="dropdown-item d-flex align-items-center js-edit" onclick="editResponse(event, '${survey.surveyId}')">
+                                  <span class="me-auto">Edit</span>
+                                  <div class="icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                                  </div>
+                               </button>
+                          </li>
+                          <li>
+                              <hr class="dropdown-divider">
+                          </li>
+                          <li>
+                              <button class="dropdown-item d-flex align-items-center text-danger js-delete" onclick="deleteResponse(event, '${survey.surveyId}')">
+                                  <span class="me-auto">Delete</span>
+                                  <div class="icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                  </div>
+                              </button>
+                          </li>
+                      </ul>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>`;
-        surveyBodyElement.appendChild(responseElement);
+          </div>`;
+        surveyContainer.appendChild(responseElement);
       } else {
         const responseForm = document.createElement("form");
         responseForm.classList.add(
@@ -303,38 +390,21 @@ async function drawSurveyData(surveyNumber) {
           "js-responseform"
         );
         responseForm.innerHTML = ` 
-      <div class="row align-items-center gx-0">
-        <div class="col-auto">
-            <a href="#" class="btn btn-icon btn-link text-body rounded-circle dz-clickable" id="dz-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-paperclip">
-                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
-                </svg>
-            </a>
-        </div>
-        <div class="col">
-            <div class="input-group">
+          <div class="row align-items-center gx-0">
+            <div class="col">
+              <div class="input-group">
                 <input id="responseInput" type="text" class="form-control px-0 messageInput js-response-input" placeholder="Type your response..." rows="1" data-emoji-input="" data-autosize="true" style="overflow: hidden; overflow-wrap: break-word; resize: none; height: 47px;" />
-                <a id="emojiButton" class="input-group-text text-body pe-0">
-                    <span class="icon icon-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-smile">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-                            <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                            <line x1="15" y1="9" x2="15.01" y2="9"></line>
-                        </svg>
-                    </span>
-                </a>
+              </div>
             </div>
-        </div>
-        <div class="col-auto">
-            <button id="responseSubmit" class="btn btn-icon btn-primary rounded-circle ms-5">
+            <div class="col-auto">
+              <button id="responseSubmit" class="btn btn-icon btn-primary rounded-circle ms-5">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-send">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                 </svg>
-            </button>
-        </div>
-      </div>`;
+              </button>
+            </div>
+          </div>`;
 
         responseForm.addEventListener("submit", async (event) => {
           event.preventDefault();
@@ -364,40 +434,263 @@ async function drawSurveyData(surveyNumber) {
           });
 
           if (submitResponse.ok) {
-            // Add the response to the survey body
+            // Add the response to the survey container
             const responseElement = document.createElement("div");
             responseElement.classList.add("message", "message-out");
 
             responseElement.innerHTML = `
-              <div class="message-inner">
-                <div class="message-body">
-                  <div class="message-content">
-                    <div class="message-text">
-                      <p><strong>R:</strong> ${responseText}</p>
-                    </div>
+             <div class="message-inner">
+            <div class="message-body">
+              <div class="message-content">
+                <div class="message-text">
+                  <p><strong>R:</strong> ${responseText}</p>
+                </div>
+                <div class="message-action">
+                  <div class="dropdown">
+                      <a class="icon text-muted" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                      </a>
+                      <ul class="dropdown-menu">
+                          <li>
+                              <button class="dropdown-item d-flex align-items-center js-edit" onclick="editResponse(event, '${survey.surveyId}')">
+                                  <span class="me-auto">Edit</span>
+                                  <div class="icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                                  </div>
+                               </button>
+                          </li>
+                          <li>
+                              <hr class="dropdown-divider">
+                          </li>
+                          <li>
+                              <button class="dropdown-item d-flex align-items-center text-danger js-delete" onclick="deleteResponse(event, '${survey.surveyId}')">
+                                  <span class="me-auto">Delete</span>
+                                  <div class="icon">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                  </div>
+                              </button>
+                          </li>
+                      </ul>
                   </div>
                 </div>
-              </div>`;
+              </div>
+            </div>
+          </div>`;
 
-            event.target.insertAdjacentElement("beforebegin", responseElement);
-
+            surveyContainer.appendChild(responseElement);
             responseInput.value = "";
-
             responseForm.classList.add("d-none");
           } else {
             console.error("Error submitting response:", submitResponse.status);
           }
         });
-        // Append the response form to the survey body
-        surveyBodyElement.appendChild(responseForm);
+
+        // Append the response form to the survey container
+        surveyContainer.appendChild(responseForm);
       }
+
+      // Append the survey container to the survey body
+      surveyBodyElement.appendChild(surveyContainer);
     }
   } catch (error) {
     console.error("Error drawing survey data:", error);
   }
 }
 
-window.addEventListener("popstate", function (event) {
+async function deleteResponse(event, surveyId) {
+  try {
+    // Create the modal HTML
+    const modalHTML = `
+      <div class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Delete Response Confirmation</h5>
+              
+            </div>
+            <div class="modal-body">
+              <p>Are you sure you want to delete this response?</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary">Delete</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    // Append modal HTML to the document body
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+    // Get the modal element
+    const modal = document.querySelector(".modal");
+
+    // Get the delete button in the modal
+    const deleteButton = modal.querySelector(".btn-primary");
+
+    const cancelButton = modal.querySelector(".btn-secondary");
+
+    cancelButton.addEventListener("click", async () => {
+      $(modal).modal("hide");
+    });
+
+    // Add a click event listener to the delete button
+    deleteButton.addEventListener("click", async () => {
+      try {
+        // Close the modal
+        $(modal).modal("hide");
+
+        // Send delete request to the server
+        const response = await fetch(URL_ROOT + "ajax.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            scope: "delete",
+            action: "deleteResponse",
+            surveyId: surveyId,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        } else {
+
+          const surveyContainer = event.target.closest(".survey-container");
+
+          // Find the response element and remove it
+          const responseElement = surveyContainer.querySelector(
+            ".message.message-out"
+          );
+          responseElement.classList.add("d-none");
+
+          // Show the response form again
+          const responseForm =
+            surveyContainer.querySelector(".js-responseform");
+          if (responseForm) {
+            responseForm.classList.remove("d-none");
+          }
+        }
+      } catch (error) {
+        console.error("Error deleting response:", error.message);
+      }
+    });
+
+    // Show the modal
+    $(modal).modal("show");
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+async function editResponse(event, surveyId) {
+  try {
+    const surveyContainer = event.target.closest(".survey-container");
+
+    const responseTextElement = surveyContainer.querySelector(
+      ".message.message-out .message-text p"
+    );
+
+    if (!responseTextElement) {
+      throw new Error("Response text element not found");
+    }
+
+    const responseText = responseTextElement.textContent.trim();
+
+    // Extract the response text without "R: " for editing
+    const responseTextWithoutPrefix = responseText.replace(/^R:\s*/, "");
+
+    // Create the modal HTML
+    const modalHTML = `
+      <div class="modal fade js-editModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit response</h5>
+            </div>
+            <div class="modal-body">
+              <form>
+                <div class="form-group">
+                  <label for="js-message-text" class="col-form-label">Message:</label>
+                  <textarea class="form-control" id="js-message-text">${responseTextWithoutPrefix}</textarea>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" id="js-cancel-button" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" id="send-message">Send message</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    // Append modal HTML to the document body
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+    // Get the modal element
+    const modal = document.querySelector(".js-editModal");
+
+    // Show the modal
+    $(modal).modal("show");
+
+    document
+      .getElementById("js-cancel-button")
+      .addEventListener("click", async () => {
+        $(modal).modal("hide");
+      });
+
+    // Add a click event listener to the send message button
+    document
+      .getElementById("send-message")
+      .addEventListener("click", async () => {
+        try {
+          const updatedText = document
+            .getElementById("js-message-text")
+            .value.trim();
+
+          // Construct the updated text with "R: " prefix
+
+          // Update the response text in the surveyContainer
+          responseTextElement.textContent = updatedText;
+
+          const response = await fetch(URL_ROOT + "ajax.php", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              scope: "edit",
+              action: "editResponse",
+              surveyId: surveyId,
+              response: updatedText,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          } else {
+            // Close the modal
+            $(modal).modal("hide");
+
+            responseTextElement.textContent = "R: " + updatedText;
+          }
+        } catch (error) {
+          console.error("Error updating response:", error.message);
+        }
+      });
+
+    // Remove the modal from the DOM after it is closed
+    $(modal).on("hidden.bs.modal", function () {
+      modal.remove();
+    });
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+
+window.addEventListener("popstate", function () {
   const currentURL = window.location.href;
   const parts = currentURL.split("/");
   const localhostIndex = parts.indexOf("localhost");
@@ -411,4 +704,6 @@ function updateDropdownText(text) {
   document.getElementById("selectedStatus").value = text;
 }
 
+
 drawSurveys();
+countSurveys();

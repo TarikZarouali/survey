@@ -5731,21 +5731,17 @@ textarea.form-control-lg {
     color: #fff
 }
 
-.card {
+.card-body {
     position: relative;
-    display: -webkit-box;
-    display: -ms-flexbox;
     display: flex;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
     flex-direction: column;
-    min-width: 0;
-    word-wrap: break-word;
-    background-color: #16191c;
-    background-clip: border-box;
-    border: 2px solid #1e2126;
     border-radius: .6rem
+}
+.cardSurvey{
+    background-color: #1e2126;
+}
+.surveyActive{
+    background-color: #3a393b;
 }
 
 .card>hr {
@@ -5802,7 +5798,7 @@ textarea.form-control-lg {
     padding: .75rem 1.5rem;
     margin-bottom: 0;
     background-color: transparent;
-    border-bottom: 2px solid #1e2126
+    border-bottom: 2px solid #f5f8fb
 }
 
 .card-header:first-child {
@@ -5812,7 +5808,7 @@ textarea.form-control-lg {
 .card-footer {
     padding: .75rem 1.5rem;
     background-color: transparent;
-    border-top: 2px solid #1e2126
+    border-top: 2px solid #f5f8fb
 }
 
 .card-footer:last-child {
@@ -5827,8 +5823,8 @@ textarea.form-control-lg {
 }
 
 .card-header-tabs .nav-link.active {
-    background-color: #16191c;
-    border-bottom-color: #16191c
+    background-color: #fff;
+    border-bottom-color: #fff
 }
 
 .card-header-pills {
