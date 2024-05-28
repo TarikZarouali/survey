@@ -63,6 +63,8 @@ async function loadMaxSurveysAmount() {
   }
 }
 
+
+
 document.addEventListener("DOMContentLoaded",loadMaxSurveysAmount, localStorage.setItem("color-scheme", "light"));
 
 async function fetchSurveys() {
