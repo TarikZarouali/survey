@@ -83,7 +83,7 @@
 
 
                 <!-- LIGHT MODE DARK MODE SWITCH -->
-                <li class="nav-item d-none d-xl-block">
+                <li class="nav-item">
                     <a class="switcher-btn nav-link py-0 py-lg-8" title="Themes">
                         <div class="switcher-icon switcher-icon-dark icon icon-xl d-none" data-theme-mode="dark">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon">
@@ -176,7 +176,7 @@
                                         <div class="card-body ">
                                             <!-- Accordion -->
                                             <div class="accordion accordion-flush" id="accordion-profile">
-                                            <div class="accordion-item" style="padding: 1rem; border-radius: 1rem;">
+                                                <div class="accordion-item" style="padding: 1rem; border-radius: 1rem;">
                                                     <div class="accordion-header" id="accordion-profile-1">
                                                         <a href="#" class="accordion-button text-reset collapsed" data-bs-toggle="collapse" data-bs-target="#accordion-profile-body-1" aria-expanded="false" aria-controls="accordion-profile-body-1">
                                                             <div>
@@ -356,8 +356,8 @@
                 </div>
 
             </div>
+        </main>
     </div>
-    </main>
 
     <!-- Chat -->
 

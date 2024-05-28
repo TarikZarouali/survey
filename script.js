@@ -58,13 +58,12 @@ async function saveMaxSurveysAmount() {
 
 async function loadMaxSurveysAmount() {
   var amount = localStorage.getItem("maxSurveys");
-  console.log(amount);
   if (amount !== null) {
     document.getElementById("js-surveyAmount").value = amount;
   }
 }
 
-document.addEventListener("DOMContentLoaded", loadMaxSurveysAmount);
+document.addEventListener("DOMContentLoaded",loadMaxSurveysAmount, localStorage.setItem("color-scheme", "light"));
 
 async function fetchSurveys() {
   var maxSurveysAmount = localStorage.getItem("maxSurveys");
