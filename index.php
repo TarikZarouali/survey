@@ -85,7 +85,7 @@
                 <!-- LIGHT MODE DARK MODE SWITCH -->
                 <li class="nav-item d-none d-xl-block">
                     <a class="switcher-btn nav-link py-0 py-lg-8" title="Themes">
-                        <div class="switcher-icon switcher-icon-dark icon icon-xl" data-theme-mode="dark">
+                        <div class="switcher-icon switcher-icon-dark icon icon-xl d-none" data-theme-mode="dark">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon">
                                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                             </svg>
@@ -166,19 +166,17 @@
                                 <div class="mb-8">
                                     <h2 class="fw-bold m-0">Settings</h2>
                                 </div>
-
-
                                 <!-- Account -->
                                 <div class="mt-8">
                                     <div class="d-flex align-items-center mb-4 px-6">
-                                        <small class="text-muted me-auto">Account</small>
+                                        <small class="text-muted me-auto">Settings</small>
                                     </div>
 
-                                    <div class="card border-0">
-                                        <div class="card-body py-2">
+                                    <div class="card border-5">
+                                        <div class="card-body ">
                                             <!-- Accordion -->
                                             <div class="accordion accordion-flush" id="accordion-profile">
-                                                <div class="accordion-item">
+                                            <div class="accordion-item" style="padding: 1rem; border-radius: 1rem;">
                                                     <div class="accordion-header" id="accordion-profile-1">
                                                         <a href="#" class="accordion-button text-reset collapsed" data-bs-toggle="collapse" data-bs-target="#accordion-profile-body-1" aria-expanded="false" aria-controls="accordion-profile-body-1">
                                                             <div>
@@ -191,8 +189,8 @@
                                                     <div id="accordion-profile-body-1" class="accordion-collapse collapse" aria-labelledby="accordion-profile-1" data-parent="#accordion-profile" style="">
                                                         <div class="accordion-body">
                                                             <div class="form-floating mb-6">
-                                                                <input type="number" class="form-control" id="js-surveyAmount" placeholder="Amount">
-                                                                <label for="js-surveyAmount">Amount</label> <!-- Corrected for attribute to match the input ID -->
+                                                                <input type="number" class="form-control" id="js-surveyAmount" placeholder="Amount" value="">
+                                                                <label for="js-surveyAmount">Amount</label>
                                                             </div>
 
                                                             <button type="button" class="btn btn-block btn-lg btn-primary w-100" onclick="saveMaxSurveysAmount()">Save</button> <!-- Added onclick event to trigger the function -->
@@ -203,8 +201,8 @@
 
 
                                                 <!-- Switch -->
-                                                <div class="accordion-item">
-                                                    <div class="accordion-header mb-3"> <!-- Added mb-3 class for margin bottom -->
+                                                <div class="accordion-item" style="padding: 1rem; border-radius: 1rem;">
+                                                    <div class="mb-3"> <!-- Added mb-3 class for margin bottom -->
                                                         <div class="row align-items-center">
                                                             <div class="col">
                                                                 <h5>Appearance</h5>
@@ -212,7 +210,7 @@
                                                             </div>
                                                             <div class="col-auto">
                                                                 <a class="switcher-btn text-reset" title="Themes">
-                                                                    <div class="switcher-icon switcher-icon-dark icon icon-lg" data-theme-mode="dark">
+                                                                    <div class="switcher-icon switcher-icon-dark icon icon-lg d-none" data-theme-mode="dark">
                                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon">
                                                                             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                                                                         </svg>
@@ -292,13 +290,9 @@
                                             Change survey status
                                         </button>
                                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                            <a class="dropdown-item" onclick="updateDropdownText('Read')">Read</a>
-                                            <a class="dropdown-item" onclick="updateDropdownText('Unread')">Unread</a>
+                                            <a class="dropdown-item" onclick="changeSelectedSurveysStatus('Read')">Read</a>
+                                            <a class="dropdown-item" onclick="changeSelectedSurveysStatus('Unread')">Unread</a>
                                         </div>
-                                        <input type="hidden" id="selectedStatus" name="selectedStatus" value="">
-                                    </div>
-                                    <div class="d-flex flex-row">
-                                        <button type="submit" onclick="changeSurveyStatus()" class="btn btn-primary me-3">Submit</button>
                                     </div>
                                 </div>
                             </div>

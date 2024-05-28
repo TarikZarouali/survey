@@ -58,7 +58,7 @@ if (isset($decodedParams->scope) && !empty($decodedParams->scope)) {
       }
    }elseif ($decodedParams->scope == 'surveyData') {
       if ($decodedParams->action == 'getSurveyBySurveyNumber') {
-         $stmt = $dbh->prepare('SELECT s.surveyId, s.surveyQuestion, s.surveyAnswer, s.surveyResponse, s.surveyOwner, s.surveyNumber, u.userUserName
+         $stmt = $dbh->prepare('SELECT s.surveyId, s.surveyQuestion, s.surveyAnswer, s.surveyResponse, s.surveyOwner, s.surveyNumber, s.surveyStatus, u.userUserName
                                FROM surveys s 
                                INNER JOIN users u ON u.userId = s.surveyOwner 
                                WHERE s.surveyNumber = :surveyNumber');
@@ -99,23 +99,21 @@ if (isset($decodedParams->scope) && !empty($decodedParams->scope)) {
          $response['message'] = 'Response could not be updated';
       }
    } elseif ($decodedParams->scope == 'surveyStatus') {
+    if ($decodedParams->action == 'changeSurveyStatus') {
+        $surveyStatusValue = $decodedParams->surveyStatusValue;
+        $surveyId = $decodedParams->surveyId;
+        $stmt = $dbh->prepare('UPDATE surveys SET surveyStatus = :surveyStatus WHERE surveyId = :surveyId');
 
-      if ($decodedParams->action == 'changeSurveyStatus') {
+        $stmt->bindParam(':surveyStatus', $surveyStatusValue);
+        $stmt->bindParam(':surveyId', $surveyId);
+        $stmt->execute();
 
-         $surveyStatusValue = $decodedParams->surveyStatusValue;
-         $surveyNumber = $decodedParams->surveyNumber;
-         $stmt = $dbh->prepare('UPDATE surveys SET surveyStatus = :surveyStatus WHERE surveyNumber = :surveyNumber');
-
-         $stmt->bindParam(':surveyStatus', $surveyStatusValue);
-         $stmt->bindParam(':surveyNumber', $surveyNumber);
-         $stmt->execute();
-
-         $response['status'] = 200;
-         $response['message'] = 'Status updated successfully';
-      } else {
-         $response['status'] = 404;
-         $response['message'] = 'Status could not be updated';
-      }
+        $response['status'] = 200;
+        $response['message'] = 'Status updated successfully';
+    } else {
+        $response['status'] = 404;
+        $response['message'] = 'Status could not be updated';
+    }
    } elseif ($decodedParams->scope == 'read') {
       if ($decodedParams->action == 'changeSurveyStatusToRead') {
 

@@ -8,6 +8,7 @@ var id = parts[localhostIndex + 3];
 const mainSurvey = document.getElementById("mainSurvey");
 const surveyContainer = document.getElementById("survey");
 const start = document.getElementById("start");
+const none = document.getElementById("none");
 const chatFooter = document.getElementById("footer");
 const chatHeader = document.querySelector("js-header");
 const deleteButton = document.querySelector("js-delete");
@@ -23,6 +24,8 @@ surveysTabLink.addEventListener("click", async () => {
 
 settingsTabLink.addEventListener("click", async () => {
   window.history.pushState(null, null, "/survey/" + "settings/");
+  mainSurvey.classList.add("d-none");
+  start.classList.add("d-none")
 });
 
 function redirectToRoot() {
@@ -44,11 +47,24 @@ document.addEventListener("keydown", function (event) {
 });
 
 async function saveMaxSurveysAmount() {
-
-  const surveyAmount = document.getElementById("js-surveyAmount").value;
-  localStorage.setItem("maxSurveys", surveyAmount);
-
+  try {
+    const surveyAmount = document.getElementById("js-surveyAmount").value;
+    localStorage.setItem("maxSurveys", surveyAmount);
+    redirectToRoot();
+  } catch (error) {
+    console.error("Error saving maxSurveys amount:", error);
+  }
 }
+
+async function loadMaxSurveysAmount() {
+  var amount = localStorage.getItem("maxSurveys");
+  console.log(amount);
+  if (amount !== null) {
+    document.getElementById("js-surveyAmount").value = amount;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadMaxSurveysAmount);
 
 async function fetchSurveys() {
   var maxSurveysAmount = localStorage.getItem("maxSurveys");
@@ -61,7 +77,7 @@ async function fetchSurveys() {
       body: JSON.stringify({
         scope: "survey",
         action: "getSurveys",
-        maxSurveysAmount: maxSurveysAmount
+        maxSurveysAmount: maxSurveysAmount,
       }),
     });
     const response = await call.json();
@@ -73,47 +89,6 @@ async function fetchSurveys() {
 }
 
 async function countSurveys() {
-
-  try {
-      const call = await fetch(URL_ROOT + "ajax.php", {
-          method: "POST",
-          headers: {
-              "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-              scope: "countSurveys",
-              action: "selectCountSurveys",
-          }),
-      });
-
-      const response = await call.json();
-      if (response.status === '200') {
-          const count = response.data;
-
-          
-          // Update the count badge
-          const countBadge = document.querySelector('#js-surveysTabLink .badge span');
-          if(count > 0){
-            countBadge.innerText = count;
-            countBadge.style.display = 'block';
-          }else{
-            countBadge.innerText = 0
-          }
-      } else {
-          console.error("Error fetching surveys:", response.message);
-      }
-  } catch (error) {
-      console.error("Error fetching surveys:", error);
-  }
-}
-async function changeSurveyStatus() {
-  var selectedStatus = document.getElementById("selectedStatus").value;
-
-  console.log(selectedStatus);
-  const url = window.location.href;
-  const parts = url.split("/");
-  const surveyNumber = parts[5];
-
   try {
     const call = await fetch(URL_ROOT + "ajax.php", {
       method: "POST",
@@ -121,22 +96,65 @@ async function changeSurveyStatus() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        scope: "surveyStatus",
-        action: "changeSurveyStatus",
-        surveyStatusValue: selectedStatus,
-        surveyNumber: surveyNumber,
+        scope: "countSurveys",
+        action: "selectCountSurveys",
       }),
     });
 
     const response = await call.json();
+    if (response.status === "200") {
+      const count = response.data;
 
-    if (response.status === 200) {
-      redirectToRoot();
+      // Update the count badge
+      const countBadge = document.querySelector(
+        "#js-surveysTabLink .badge span"
+      );
+      if (count > 0) {
+        countBadge.innerText = count;
+        countBadge.style.display = "block";
+      } else {
+        countBadge.innerText = 0;
+      }
     } else {
-      console.error("Status could not be updated:");
+      console.error("Error fetching surveys:", response.message);
     }
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error("Error fetching surveys:", error);
+  }
+}
+async function changeSelectedSurveysStatus(status) {
+  // Get all checkboxes
+  const checkboxes = document.querySelectorAll(".js-surveyCheckbox:checked");
+
+  // Iterate through checked checkboxes
+  for (const checkbox of checkboxes) {
+    const surveyId = checkbox.dataset.surveyId;
+
+    try {
+      const response = await fetch(URL_ROOT + "ajax.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          scope: "surveyStatus",
+          action: "changeSurveyStatus",
+          surveyStatusValue: status,
+          surveyId: surveyId,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.status === 200) {
+        console.log(`Status for survey ${surveyId} updated to ${status}`);
+        redirectToRoot();
+      } else {
+        console.error(`Status for survey ${surveyId} could not be updated`);
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+    }
   }
 }
 
@@ -284,7 +302,15 @@ async function drawSurveyData(surveyNumber) {
       // Create survey container
       const surveyContainer = document.createElement("div");
       surveyContainer.classList.add("survey-container");
+      
+      const checkboxElement = document.createElement("input");
+      checkboxElement.type = "checkbox";
+      checkboxElement.classList.add("js-surveyCheckbox");
+      checkboxElement.dataset.surveyId = survey.surveyId; 
+     
 
+
+      surveyContainer.appendChild(checkboxElement);
       // Update survey title
       const surveyTitleElement = document.querySelector(
         "#mainSurvey .text-truncate"
@@ -556,7 +582,6 @@ async function deleteResponse(event, surveyId) {
         if (!response.ok) {
           throw new Error("Network response was not ok");
         } else {
-
           const surveyContainer = event.target.closest(".survey-container");
 
           // Find the response element and remove it
@@ -689,7 +714,6 @@ async function editResponse(event, surveyId) {
   }
 }
 
-
 window.addEventListener("popstate", function () {
   const currentURL = window.location.href;
   const parts = currentURL.split("/");
@@ -703,7 +727,6 @@ function updateDropdownText(text) {
     text + ' <span class="caret"></span>';
   document.getElementById("selectedStatus").value = text;
 }
-
 
 drawSurveys();
 countSurveys();
