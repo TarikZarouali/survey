@@ -303,13 +303,13 @@
 
                     <!-- Chat: Content -->
                     <div class="chat-body hide-scrollbar flex-1 h-100">
-                        <div class="chat-body-inner" style="padding-bottom: 87px">
+                        <div class="chat-body-inner" style="padding-bottom: 87px;">
                             <div class="py-6 py-lg-12" id="surveyContent">
                                 <!-- Survey questions and answers will be dynamically added here -->
                             </div>
                         </div>
-
                     </div>
+
                     <!-- Chat: Content -->
                     <!-- Chat: Footer -->
                     <div id="footer" class="chat-footer pb-3 pb-lg-7 position-absolute bottom-0 start-0 js-footer">

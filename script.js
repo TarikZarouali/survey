@@ -108,21 +108,18 @@ async function countSurveys() {
     if (response.status === "200") {
       const count = response.data;
 
-
-      const surveysTabLink = document.querySelector('#js-surveysTabLink');
+      const surveysTabLink = document.querySelector("#js-surveysTabLink");
 
       console.log(surveysTabLink);
       // Update the count badge
-      const countBadge = document.querySelector(
-        "#js-surveysCountBadge"
-      );
+      const countBadge = document.querySelector("#js-surveysCountBadge");
 
       if (count > 0) {
         countBadge.innerText = count;
         countBadge.style.display = "block";
       } else {
-        surveysTabLink.classList.remove('active')
-        countBadge.style.display = 'none';
+        surveysTabLink.classList.remove("active");
+        countBadge.style.display = "none";
       }
     } else {
       console.error("Error fetching surveys:", response.message);
@@ -435,16 +432,17 @@ async function drawSurveyData(surveyOwner) {
             </div>
           </div>`;
         surveyContainer.appendChild(responseElement);
-      } else {
-        const responseForm = document.createElement("form");
-        responseForm.classList.add(
-          "chat-form",
-          "rounded-pill",
-          "bg-dark",
-          "m-5",
-          "js-responseform"
-        );
-        responseForm.innerHTML = `           
+      }
+
+      const responseForm = document.createElement("form");
+      responseForm.classList.add(
+        "chat-form",
+        "rounded-pill",
+        "bg-dark",
+        "m-5",
+        "js-responseform"
+      );
+      responseForm.innerHTML = `           
         <div class="row align-items-center gx-0">
         <div class="col">
           <div class="input-group">
@@ -461,39 +459,42 @@ async function drawSurveyData(surveyOwner) {
         </div>
       </div>`;
 
-        responseForm.addEventListener("submit", async (event) => {
-          event.preventDefault();
+      if (responseText) {
+        responseForm.classList.add("d-none");
+      }
 
-          const responseInput =
-            responseForm.querySelector(".js-response-input");
-          const responseText = responseInput.value.trim();
+      responseForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
 
-          if (responseText === "") {
-            return;
-          }
+        const responseInput = responseForm.querySelector(".js-response-input");
+        const responseText = responseInput.value.trim();
 
-          const surveyId = survey.surveyId;
+        if (responseText === "") {
+          return;
+        }
 
-          // Submit response to the server
-          const submitResponse = await fetch(URL_ROOT + "ajax.php", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              scope: "response",
-              action: "handleResponse",
-              surveyId: surveyId,
-              response: responseText,
-            }),
-          });
+        const surveyId = survey.surveyId;
 
-          if (submitResponse.ok) {
-            // Add the response to the survey container
-            const responseElement = document.createElement("div");
-            responseElement.classList.add("message", "message-out");
+        // Submit response to the server
+        const submitResponse = await fetch(URL_ROOT + "ajax.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            scope: "response",
+            action: "handleResponse",
+            surveyId: surveyId,
+            response: responseText,
+          }),
+        });
 
-            responseElement.innerHTML = `
+        if (submitResponse.ok) {
+          // Add the response to the survey container
+          const responseElement = document.createElement("div");
+          responseElement.classList.add("message", "message-out");
+
+          responseElement.innerHTML = `
          <div class="message-inner">
         <div class="message-body">
           <div class="message-content">
@@ -532,17 +533,16 @@ async function drawSurveyData(surveyOwner) {
         </div>
       </div>`;
 
-            surveyContainer.appendChild(responseElement);
-            responseInput.value = "";
-            responseForm.classList.add("d-none");
-          } else {
-            console.error("Error submitting response:", submitResponse.status);
-          }
-        });
+          surveyContainer.appendChild(responseElement);
+          responseInput.value = "";
+          responseForm.classList.add("d-none");
+        } else {
+          console.error("Error submitting response:", submitResponse.status);
+        }
+      });
 
-        // Append the response form to the survey container
-        surveyContainer.appendChild(responseForm);
-      }
+      // Append the response form to the survey container
+      surveyContainer.appendChild(responseForm);
 
       // Append the survey container to the survey body
       const surveyNumberContainer = surveyBodyElement.lastChild;
@@ -562,7 +562,6 @@ async function deleteResponse(event, surveyId) {
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">Delete Response Confirmation</h5>
-              
             </div>
             <div class="modal-body">
               <p>Are you sure you want to delete this response?</p>
@@ -584,8 +583,8 @@ async function deleteResponse(event, surveyId) {
     // Get the delete button in the modal
     const deleteButton = modal.querySelector(".btn-primary");
 
+    // Add event listener to cancel button to hide the modal
     const cancelButton = modal.querySelector(".btn-secondary");
-
     cancelButton.addEventListener("click", async () => {
       $(modal).modal("hide");
     });
@@ -613,17 +612,25 @@ async function deleteResponse(event, surveyId) {
           throw new Error("Network response was not ok");
         } else {
           const surveyContainer = event.target.closest(".survey-container");
-
+          console.log(surveyContainer);
           // Find the response element and remove it
           const responseElement = surveyContainer.querySelector(
             ".message.message-out"
           );
-          responseElement.classList.add("d-none");
+          console.log(surveyContainer);
+          if (responseElement) {
+            console.log(1);
+            responseElement.remove();
+          }
 
-          // Show the response form again
-          const responseForm =
-            surveyContainer.querySelector(".js-responseform");
-          if (responseForm) {
+          // Show the response form again if no response is found
+          const responseForm = surveyContainer.querySelector(".js-responseform");
+          console.log(responseForm);
+          if (
+            !surveyContainer.querySelector(".message.message-out") &&
+            responseForm
+          ) {
+            console.log(2);
             responseForm.classList.remove("d-none");
           }
         }

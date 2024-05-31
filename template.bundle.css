@@ -5738,6 +5738,11 @@ textarea.form-control-lg {
 .cardSurvey{
     background-color: #fff;
 }
+
+.chat-body-inner {
+    padding-bottom: 100px !important;
+}
+
 .surveyActive{
     background-color: #D3D3D3;
 }

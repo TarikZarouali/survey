@@ -21433,6 +21433,10 @@ hr.offcanvas-divider {
     height: calc(100vh - 58px)
 }
 
+.chat-body-inner {
+    padding-bottom: 100px !important;
+}
+
 .chat-footer {
     width: calc(100% + (2rem));
     margin-left: -1rem;
