@@ -19,20 +19,26 @@ const surveysTab = document.querySelector(".js-surveysTab");
 const settingsTab = document.querySelector(".js-settingsTab");
 
 async function loadPage() {
-  const userId = id;
+  if (parts[localhostIndex + 3]) {
+    const userId = id;
 
-  mainSurvey.classList.remove("d-none");
-  start.classList.add("d-none");
-  
-  console.log(userId);
-  drawSurveyData(userId);
+    mainSurvey.classList.remove("d-none");
+    start.classList.add("d-none");
+
+    console.log(userId);
+    drawSurveyData(userId);
+  } else if (parts[localhostIndex + 2] === "settings"){
+    settingsTabLink.click();
+    window.history.pushState(null, null, "/survey/" + "settings/");
+  }
 }
 
 surveysTabLink.addEventListener("click", async () => {
   window.history.pushState(null, null, "/survey/" + "read/");
 });
 
-settingsTabLink.addEventListener("click", async () => {
+settingsTabLink.addEventListener("click", async (event) => {
+  event.preventDefault
   window.history.pushState(null, null, "/survey/" + "settings/");
   mainSurvey.classList.add("d-none");
   start.classList.add("d-none");
