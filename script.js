@@ -25,7 +25,7 @@ surveysTabLink.addEventListener("click", async () => {
 settingsTabLink.addEventListener("click", async () => {
   window.history.pushState(null, null, "/survey/" + "settings/");
   mainSurvey.classList.add("d-none");
-  start.classList.add("d-none")
+  start.classList.add("d-none");
 });
 
 function redirectToRoot() {
@@ -63,11 +63,13 @@ async function loadMaxSurveysAmount() {
   }
 }
 
+document.addEventListener(
+  "DOMContentLoaded",
+  loadMaxSurveysAmount,
+  localStorage.setItem("color-scheme", "light")
+);
 
-
-document.addEventListener("DOMContentLoaded",loadMaxSurveysAmount, localStorage.setItem("color-scheme", "light"));
-
-async function fetchSurveys() {
+async function fetchUsers() {
   var maxSurveysAmount = localStorage.getItem("maxSurveys");
   try {
     const call = await fetch(URL_ROOT + "ajax.php", {
@@ -76,8 +78,8 @@ async function fetchSurveys() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        scope: "survey",
-        action: "getSurveys",
+        scope: "users",
+        action: "getUsers",
         maxSurveysAmount: maxSurveysAmount,
       }),
     });
@@ -106,15 +108,21 @@ async function countSurveys() {
     if (response.status === "200") {
       const count = response.data;
 
+
+      const surveysTabLink = document.querySelector('#js-surveysTabLink');
+
+      console.log(surveysTabLink);
       // Update the count badge
       const countBadge = document.querySelector(
-        "#js-surveysTabLink .badge span"
+        "#js-surveysCountBadge"
       );
+
       if (count > 0) {
         countBadge.innerText = count;
         countBadge.style.display = "block";
       } else {
-        countBadge.innerText = 0;
+        surveysTabLink.classList.remove('active')
+        countBadge.style.display = 'none';
       }
     } else {
       console.error("Error fetching surveys:", response.message);
@@ -123,6 +131,7 @@ async function countSurveys() {
     console.error("Error fetching surveys:", error);
   }
 }
+
 async function changeSelectedSurveysStatus(status) {
   // Get all checkboxes
   const checkboxes = document.querySelectorAll(".js-surveyCheckbox:checked");
@@ -148,7 +157,6 @@ async function changeSelectedSurveysStatus(status) {
       const result = await response.json();
 
       if (result.status === 200) {
-        console.log(`Status for survey ${surveyId} updated to ${status}`);
         redirectToRoot();
       } else {
         console.error(`Status for survey ${surveyId} could not be updated`);
@@ -159,7 +167,7 @@ async function changeSelectedSurveysStatus(status) {
   }
 }
 
-async function changeSurveyStatusToRead(surveyNumber) {
+async function changeSurveyStatusToRead(surveyOwner) {
   const url = window.location.href;
   const parts = url.split("/");
   try {
@@ -171,7 +179,7 @@ async function changeSurveyStatusToRead(surveyNumber) {
       body: JSON.stringify({
         scope: "read",
         action: "changeSurveyStatusToRead",
-        surveyNumber: surveyNumber,
+        surveyOwner: surveyOwner,
       }),
     });
 
@@ -186,12 +194,12 @@ async function changeSurveyStatusToRead(surveyNumber) {
   }
 }
 
-async function drawSurveys() {
+async function drawUsers() {
   try {
-    const surveyList = await fetchSurveys();
+    const userList = await fetchUsers();
     const surveyContainer = document.getElementById("survey");
-    if (surveyList.length > 0) {
-      surveyList.forEach((survey) => {
+    if (userList.length > 0) {
+      userList.forEach(async (user) => {
         const surveyElement = document.createElement("div");
         surveyElement.classList.add(
           "cardSurvey",
@@ -200,31 +208,29 @@ async function drawSurveys() {
           "text-reset",
           "mb-5"
         );
+
+        // Check survey status dynamically
+        const status = user.unread ? "unread" : "read";
+
         surveyElement.innerHTML = `
-                  <div class="card-body border rounded">
-                      <div class="row gx-5 ">
-                          <div class="col-auto">
-                              <!-- Any content you want to include -->
-                          </div>
-                          <div class="col">
-                              <div class="d-flex align-items-center mb-3">
-                                  <h5 class="me-auto mb-0">${
-                                    survey.userUserName
-                                  }</h5>
-                                  <p class="truncate">${survey.surveyNumber}</p>
-                                  
-                                  <!-- Dynamic class based on survey status -->
-                                  <span class="text-white extra-small ms-2 survey-status ${
-                                    survey.surveyStatus === "unread"
-                                      ? "bg-success text-white"
-                                      : "bg-info text-white"
-                                  } p-3 rounded">
-                                      ${survey.surveyStatus}
-                                  </span>
-                              </div>
-                          </div>
+          <div class="card-body border rounded">
+              <div class="row gx-5 ">
+                  <div class="col-auto">
+                      <!-- Any content you want to include -->
+                  </div>
+                  <div class="col">
+                      <div class="d-flex align-items-center mb-3">
+                          <h5 class="me-auto mb-0">${user.userUserName}</h5>
+                          <!-- Dynamic class based on survey status -->
+                          <span class="text-white extra-small ms-2 survey-status ${
+                            status === "unread" ? "bg-success" : "bg-info"
+                          } text-white p-3 rounded">
+                              ${status}
+                          </span>
                       </div>
-                  </div>`;
+                  </div>
+              </div>
+          </div>`;
 
         surveyElement.addEventListener("click", async function (event) {
           document.querySelectorAll(".cardSurvey").forEach((element) => {
@@ -234,14 +240,13 @@ async function drawSurveys() {
           mainSurvey.classList.remove("d-none");
           start.classList.add("d-none");
 
-          // Get the survey ID from the clicked survey element
-          const surveyNumber = survey.surveyNumber;
+          // Get the user ID from the clicked survey element
+          const userId = user.userId;
 
-          await changeSurveyStatusToRead(surveyNumber);
+          await changeSurveyStatusToRead(userId);
 
           const statusElement = surveyElement.querySelector(".survey-status");
-          survey.surveyStatus = "read";
-          statusElement.textContent = survey.surveyStatus;
+          statusElement.textContent = "read";
           statusElement.classList.remove("bg-success");
           statusElement.classList.add("bg-info");
 
@@ -249,9 +254,9 @@ async function drawSurveys() {
           window.history.pushState(
             null,
             null,
-            "/survey/" + "read/" + surveyNumber + "/"
+            "/survey/" + "read/" + userId + "/"
           );
-          drawSurveyData(surveyNumber);
+          drawSurveyData(userId);
         });
         surveyContainer.appendChild(surveyElement);
       });
@@ -263,7 +268,7 @@ async function drawSurveys() {
   }
 }
 
-async function fetchSurveyData(surveyNumber) {
+async function fetchSurveyData(surveyOwner) {
   try {
     const response = await fetch(URL_ROOT + "ajax.php", {
       method: "POST",
@@ -272,8 +277,8 @@ async function fetchSurveyData(surveyNumber) {
       },
       body: JSON.stringify({
         scope: "surveyData",
-        action: "getSurveyBySurveyNumber",
-        surveyNumber: surveyNumber,
+        action: "getSurveyBySurveyOwner",
+        surveyOwner: surveyOwner,
       }),
     });
 
@@ -289,34 +294,57 @@ async function fetchSurveyData(surveyNumber) {
 }
 const surveyBodyElement = document.querySelector(".chat-body-inner");
 
-async function drawSurveyData(surveyNumber) {
+async function drawSurveyData(surveyOwner) {
   try {
-    const surveyData = await fetchSurveyData(surveyNumber);
+    const surveyData = await fetchSurveyData(surveyOwner);
     const surveys = surveyData.data;
 
     // Clear previous surveys
     surveyBodyElement.innerHTML = "";
 
+    let currentSurveyNumber = null;
+
     for (let i = 0; i < surveys.length; i++) {
       const survey = surveys[i];
+
+      // Check if survey number has changed
+      if (survey.surveyNumber !== currentSurveyNumber) {
+        // If it has, create a new container for the new survey number
+        currentSurveyNumber = survey.surveyNumber;
+
+        // Create section for surveys with the same number
+        const surveyNumberContainer = document.createElement("div");
+        surveyNumberContainer.classList.add("survey-number-container");
+        surveyNumberContainer.style.border = "2px solid #D3D3D3";
+        surveyNumberContainer.style.marginBottom = "20px";
+        surveyNumberContainer.style.padding = "20px";
+        surveyNumberContainer.style.borderRadius = "5px";
+
+        // Add survey number to the section
+        const surveyNumberElement = document.createElement("div");
+        surveyNumberElement.classList.add("survey-number");
+        surveyNumberElement.textContent = `Survey ${currentSurveyNumber}`;
+        surveyNumberContainer.appendChild(surveyNumberElement);
+
+        // Append the container to the survey body
+        surveyBodyElement.appendChild(surveyNumberContainer);
+      }
 
       // Create survey container
       const surveyContainer = document.createElement("div");
       surveyContainer.classList.add("survey-container");
-      
+
       const checkboxElement = document.createElement("input");
       checkboxElement.type = "checkbox";
       checkboxElement.classList.add("js-surveyCheckbox");
-      checkboxElement.dataset.surveyId = survey.surveyId; 
-     
-
-
+      checkboxElement.dataset.surveyId = survey.surveyId;
       surveyContainer.appendChild(checkboxElement);
+
       // Update survey title
       const surveyTitleElement = document.querySelector(
         "#mainSurvey .text-truncate"
       );
-      surveyTitleElement.textContent = survey.surveyNumber;
+      surveyTitleElement.textContent = survey.userUserName;
 
       const questionText = survey.surveyQuestion;
 
@@ -416,22 +444,22 @@ async function drawSurveyData(surveyNumber) {
           "m-5",
           "js-responseform"
         );
-        responseForm.innerHTML = ` 
-          <div class="row align-items-center gx-0">
-            <div class="col">
-              <div class="input-group">
-                <input id="responseInput" type="text" class="form-control px-0 messageInput js-response-input" placeholder="Type your response..." rows="1" data-emoji-input="" data-autosize="true" style="overflow: hidden; overflow-wrap: break-word; resize: none; height: 47px;" />
-              </div>
-            </div>
-            <div class="col-auto">
-              <button id="responseSubmit" class="btn btn-icon btn-primary rounded-circle ms-5">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-send">
-                  <line x1="22" y1="2" x2="11" y2="13"></line>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-              </button>
-            </div>
-          </div>`;
+        responseForm.innerHTML = `           
+        <div class="row align-items-center gx-0">
+        <div class="col">
+          <div class="input-group">
+            <input id="responseInput" type="text" class="form-control px-0 messageInput js-response-input" placeholder="Type your response..." rows="1" data-emoji-input="" data-autosize="true" style="overflow: hidden; overflow-wrap: break-word; resize: none; height: 47px;" />
+          </div>
+        </div>
+        <div class="col-auto">
+          <button id="responseSubmit" class="btn btn-icon btn-primary rounded-circle ms-5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-send">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>`;
 
         responseForm.addEventListener("submit", async (event) => {
           event.preventDefault();
@@ -466,43 +494,43 @@ async function drawSurveyData(surveyNumber) {
             responseElement.classList.add("message", "message-out");
 
             responseElement.innerHTML = `
-             <div class="message-inner">
-            <div class="message-body">
-              <div class="message-content">
-                <div class="message-text">
-                  <p><strong>R:</strong> ${responseText}</p>
-                </div>
-                <div class="message-action">
-                  <div class="dropdown">
-                      <a class="icon text-muted" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                      </a>
-                      <ul class="dropdown-menu">
-                          <li>
-                              <button class="dropdown-item d-flex align-items-center js-edit" onclick="editResponse(event, '${survey.surveyId}')">
-                                  <span class="me-auto">Edit</span>
-                                  <div class="icon">
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                                  </div>
-                               </button>
-                          </li>
-                          <li>
-                              <hr class="dropdown-divider">
-                          </li>
-                          <li>
-                              <button class="dropdown-item d-flex align-items-center text-danger js-delete" onclick="deleteResponse(event, '${survey.surveyId}')">
-                                  <span class="me-auto">Delete</span>
-                                  <div class="icon">
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                                  </div>
-                              </button>
-                          </li>
-                      </ul>
-                  </div>
-                </div>
+         <div class="message-inner">
+        <div class="message-body">
+          <div class="message-content">
+            <div class="message-text">
+              <p><strong>R:</strong> ${responseText}</p>
+            </div>
+            <div class="message-action">
+              <div class="dropdown">
+                  <a class="icon text-muted" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                  </a>
+                  <ul class="dropdown-menu">
+                      <li>
+                          <button class="dropdown-item d-flex align-items-center js-edit" onclick="editResponse(event, '${survey.surveyId}')">
+                              <span class="me-auto">Edit</span>
+                              <div class="icon">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                              </div>
+                           </button>
+                      </li>
+                      <li>
+                          <hr class="dropdown-divider">
+                      </li>
+                      <li>
+                          <button class="dropdown-item d-flex align-items-center text-danger js-delete" onclick="deleteResponse(event, '${survey.surveyId}')">
+                              <span class="me-auto">Delete</span>
+                              <div class="icon">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                              </div>
+                          </button>
+                      </li>
+                  </ul>
               </div>
             </div>
-          </div>`;
+          </div>
+        </div>
+      </div>`;
 
             surveyContainer.appendChild(responseElement);
             responseInput.value = "";
@@ -517,7 +545,8 @@ async function drawSurveyData(surveyNumber) {
       }
 
       // Append the survey container to the survey body
-      surveyBodyElement.appendChild(surveyContainer);
+      const surveyNumberContainer = surveyBodyElement.lastChild;
+      surveyNumberContainer.appendChild(surveyContainer);
     }
   } catch (error) {
     console.error("Error drawing survey data:", error);
@@ -719,8 +748,8 @@ window.addEventListener("popstate", function () {
   const currentURL = window.location.href;
   const parts = currentURL.split("/");
   const localhostIndex = parts.indexOf("localhost");
-  const surveyNumber = parts[localhostIndex + 2];
-  drawSurveyData(surveyNumber);
+  const surveyOwner = parts[localhostIndex + 2];
+  drawSurveyData(surveyOwner);
 });
 
 function updateDropdownText(text) {
@@ -729,5 +758,5 @@ function updateDropdownText(text) {
   document.getElementById("selectedStatus").value = text;
 }
 
-drawSurveys();
+drawUsers();
 countSurveys();

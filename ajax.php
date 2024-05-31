@@ -13,26 +13,52 @@ $response = [
 ];
 $response = array();
 if (isset($decodedParams->scope) && !empty($decodedParams->scope)) {
-   if ($decodedParams->scope == 'survey') {
+   if ($decodedParams->scope == 'users') {
       if (isset($decodedParams->action) && !empty($decodedParams->action)) {
-         if ($decodedParams->action == 'getSurveys') {
+         if ($decodedParams->action == 'getUsers') {
             $maxSurveysAmount = (int)$decodedParams->maxSurveysAmount ?? NULL;
-            $queryString = 'SELECT s.surveyId, s.surveyQuestion, s.surveyAnswer, s.surveyResponse, s.surveyOwner, s.surveyStatus, s.surveyNumber, u.userUserName
-            FROM surveys s
-            INNER JOIN users u ON s.surveyOwner = u.userId
-            GROUP BY s.surveyNumber 
+            $stmt = 'SELECT u.userId, u.userUserName
+            FROM users AS u
+            RIGHT JOIN surveys AS s ON u.userId = s.surveyOwner
+            GROUP BY u.userId 
             ORDER BY s.surveyCreateDate DESC';
 
             if (!empty($maxSurveysAmount)) {
-               $queryString .= " LIMIT " . $maxSurveysAmount;
+               $stmt .= " LIMIT " . $maxSurveysAmount;
             }
 
-            $query = $dbh->prepare($queryString);
+            $stmt = $dbh->prepare($stmt);
 
-            if ($query->execute()) {
+            if ($stmt->execute()) {
+               $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+               foreach ($users as &$user) {
+                  $stmt = $dbh->prepare('SELECT s.surveyId
+                                       FROM surveys s
+                                       WHERE s.surveyOwner = :surveyOwner AND s.surveyStatus = :surveyStatus
+                                       LIMIT 1;');
+
+                  $unreadStatus = 'unread';
+
+                  $stmt->bindParam(':surveyOwner', $user['userId']);
+                  $stmt->bindParam(':surveyStatus', $unreadStatus);
+
+                  if ($stmt->execute()) {
+                     $unreadSurvey = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                     if (!empty($unreadSurvey)) {
+                        $user['unread'] = TRUE;
+                     } else {
+                        $user['unread'] = FALSE;
+                     }
+                  } else {
+                     $user['unread'] = FALSE;
+                  }
+               }
+
                $response['status'] = '200';
                $response['message'] = 'Max surveys fetched successfully';
-               $response['data'] = $query->fetchAll(PDO::FETCH_ASSOC);
+               $response['data'] = $users;
             } else {
                $response['status'] = '500';
                $response['message'] = 'Max surveys could not be fetched';
@@ -41,11 +67,11 @@ if (isset($decodedParams->scope) && !empty($decodedParams->scope)) {
       }
    } elseif ($decodedParams->scope == "countSurveys") {
       if ($decodedParams->action == "selectCountSurveys") {
-         $queryString = 'SELECT COUNT(*) AS totalSurveys
+         $stmt = 'SELECT COUNT(*) AS totalSurveys
                           FROM surveys
                           WHERE surveyStatus = "unread"';
 
-         $query = $dbh->prepare($queryString);
+         $query = $dbh->prepare($stmt);
 
          if ($query->execute()) {
             $response['status'] = '200';
@@ -57,13 +83,14 @@ if (isset($decodedParams->scope) && !empty($decodedParams->scope)) {
          }
       }
    } elseif ($decodedParams->scope == 'surveyData') {
-      if ($decodedParams->action == 'getSurveyBySurveyNumber') {
+      if ($decodedParams->action == 'getSurveyBySurveyOwner') {
          $stmt = $dbh->prepare('SELECT s.surveyId, s.surveyQuestion, s.surveyAnswer, s.surveyResponse, s.surveyOwner, s.surveyNumber, s.surveyStatus, u.userUserName
                                FROM surveys s 
                                INNER JOIN users u ON u.userId = s.surveyOwner 
-                               WHERE s.surveyNumber = :surveyNumber');
+                               WHERE s.surveyOwner = :surveyOwner
+                               ORDER BY s.surveyNumber');
 
-         $stmt->bindParam(':surveyNumber', $decodedParams->surveyNumber);
+         $stmt->bindParam(':surveyOwner', $decodedParams->surveyOwner);
 
          if ($stmt->execute()) {
             $surveyData = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -79,6 +106,36 @@ if (isset($decodedParams->scope) && !empty($decodedParams->scope)) {
          } else {
             $response['status'] = '500';
             $response['message'] = 'Survey by id could not be fetched';
+         }
+      }
+   } elseif ($decodedParams->scope == 'surveyStatusCheck') {
+      if ($decodedParams->action == 'checkSurveyStatus') {
+         $stmt = $dbh->prepare('
+              SELECT s.surveyId, s.surveyQuestion, s.surveyAnswer, s.surveyResponse, s.surveyOwner, s.surveyNumber, s.surveyStatus, u.userUserName
+              FROM surveys s
+              INNER JOIN users u ON u.userId = s.surveyOwner
+              WHERE s.surveyOwner = :surveyOwner AND s.surveyStatus = :surveyStatus
+              ORDER BY s.surveyNumber
+              LIMIT 1;
+          ');
+         $unreadStatus = 'unread';
+         $stmt->bindParam(':surveyOwner', $decodedParams->surveyOwner);
+         $stmt->bindParam(':surveyStatus', $unreadStatus);
+
+         if ($stmt->execute()) {
+            $surveyData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if ($surveyData) {
+               $response['status'] = '200';
+               $response['message'] = 'Checked surveyStatus successfully';
+               $response['data'] = $surveyData;
+            } else {
+               $response['status'] = '404';
+               $response['message'] = 'No unread surveys found for the specified owner';
+            }
+         } else {
+            $response['status'] = '500';
+            $response['message'] = 'Survey status check could not be executed';
          }
       }
    } elseif ($decodedParams->scope == 'response') {
@@ -117,15 +174,15 @@ if (isset($decodedParams->scope) && !empty($decodedParams->scope)) {
    } elseif ($decodedParams->scope == 'read') {
       if ($decodedParams->action == 'changeSurveyStatusToRead') {
 
-         $surveyNumber = $decodedParams->surveyNumber;
-         $stmt = $dbh->prepare('UPDATE surveys SET surveyStatus = "read" WHERE surveyNumber = :surveyNumber');
+         $surveyOwner = $decodedParams->surveyOwner;
+         $stmt = $dbh->prepare('UPDATE surveys SET surveyStatus = "read" WHERE surveyOwner = :surveyOwner');
 
-         $stmt->bindParam(':surveyNumber', $surveyNumber);
+         $stmt->bindParam(':surveyOwner', $surveyOwner);
          $stmt->execute();
 
          $response['status'] = 200;
          $response['message'] = 'Status updated successfully to read';
-         $response['surveyNumber'] = $surveyNumber;
+         $response['surveyOwner'] = $surveyOwner;
       } else {
 
          $response['status'] = 404;

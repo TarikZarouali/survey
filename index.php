@@ -84,7 +84,7 @@
 
                 <!-- LIGHT MODE DARK MODE SWITCH -->
                 <li class="nav-item">
-                    <a class="switcher-btn nav-link py-0 py-lg-8" title="Themes">
+                    <a class="switcher-btn nav-link py-0 py-lg-8" title="Themes" style="pointer-events: auto;" href="#">
                         <div class="switcher-icon switcher-icon-dark icon icon-xl d-none" data-theme-mode="dark">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon">
                                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -105,6 +105,8 @@
                         </div>
                     </a>
                 </li>
+
+
 
 
                 <!-- SETTINGS  -->
@@ -251,7 +253,7 @@
 
         <!-- main start -->
         <main id="start" class="main js-start">
-            <div class="container h-100">
+            <div class="container h-100" style="margin: 100px;">
                 <div class="d-flex flex-column h-100 justify-content-center text-center">
                     <div class="mb-6">
                         <span class="icon icon-xl text-muted">
