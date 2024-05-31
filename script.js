@@ -18,6 +18,16 @@ const settingsTabLink = document.getElementById("js-settingsTabLink");
 const surveysTab = document.querySelector(".js-surveysTab");
 const settingsTab = document.querySelector(".js-settingsTab");
 
+async function loadPage() {
+  const userId = id;
+
+  mainSurvey.classList.remove("d-none");
+  start.classList.add("d-none");
+  
+  console.log(userId);
+  drawSurveyData(userId);
+}
+
 surveysTabLink.addEventListener("click", async () => {
   window.history.pushState(null, null, "/survey/" + "read/");
 });
@@ -34,16 +44,6 @@ function redirectToRoot() {
 
 window.addEventListener("beforeunload", function (event) {
   redirectToRoot();
-});
-
-document.addEventListener("keydown", function (event) {
-  if (
-    (event.key === "F5" || (event.ctrlKey && event.key === "r")) &&
-    !event.shiftKey
-  ) {
-    event.preventDefault();
-    redirectToRoot();
-  }
 });
 
 async function saveMaxSurveysAmount() {
@@ -195,6 +195,7 @@ async function drawUsers() {
   try {
     const userList = await fetchUsers();
     const surveyContainer = document.getElementById("survey");
+
     if (userList.length > 0) {
       userList.forEach(async (user) => {
         const surveyElement = document.createElement("div");
@@ -248,11 +249,7 @@ async function drawUsers() {
           statusElement.classList.add("bg-info");
 
           // Push the updated URL to the browser history
-          window.history.pushState(
-            null,
-            null,
-            "/survey/" + "read/" + userId + "/"
-          );
+          window.history.pushState(null, null, `/survey/read/${userId}`);
           drawSurveyData(userId);
         });
         surveyContainer.appendChild(surveyElement);
@@ -624,7 +621,8 @@ async function deleteResponse(event, surveyId) {
           }
 
           // Show the response form again if no response is found
-          const responseForm = surveyContainer.querySelector(".js-responseform");
+          const responseForm =
+            surveyContainer.querySelector(".js-responseform");
           console.log(responseForm);
           if (
             !surveyContainer.querySelector(".message.message-out") &&
@@ -765,5 +763,6 @@ function updateDropdownText(text) {
   document.getElementById("selectedStatus").value = text;
 }
 
+loadPage();
 drawUsers();
 countSurveys();
