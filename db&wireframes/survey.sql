@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 14, 2024 at 02:58 PM
+-- Generation Time: May 28, 2024 at 03:45 PM
 -- Server version: 10.4.25-MariaDB
 -- PHP Version: 7.4.30
 
@@ -36,16 +36,21 @@ CREATE TABLE `surveys` (
   `surveyOwner` varchar(4) NOT NULL,
   `surveyCreateDate` int(10) NOT NULL,
   `surveyIsActive` int(1) NOT NULL,
-  `surveyDescription` text DEFAULT NULL
+  `surveyDescription` text DEFAULT NULL,
+  `surveyNumber` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `surveys`
 --
 
-INSERT INTO `surveys` (`surveyId`, `surveyQuestion`, `surveyAnswer`, `surveyResponse`, `surveyStatus`, `surveyOwner`, `surveyCreateDate`, `surveyIsActive`, `surveyDescription`) VALUES
-('K8SM', 'What do you think of gardenframe?', 'I think the service gardenframe provides us has been nothing less than great!', NULL, 'read', 'Q8W0', 1713793759, 1, NULL),
-('lJ3O', 'Are you satisfied with our services?', 'Yes I am', 'hello', 'read', 'Q8W0', 1715329137, 1, NULL);
+INSERT INTO `surveys` (`surveyId`, `surveyQuestion`, `surveyAnswer`, `surveyResponse`, `surveyStatus`, `surveyOwner`, `surveyCreateDate`, `surveyIsActive`, `surveyDescription`, `surveyNumber`) VALUES
+('cqqV', 'Do you prefer lambo or ferrari', 'lambo', NULL, 'read', '0VrM', 1715857650, 1, NULL, 3),
+('K8SM', 'What do you think of gardenframe?', 'I think the service gardenframe provides us has been nothing less than great!', NULL, 'read', 'Q8W0', 1713793759, 1, NULL, 1),
+('ky3I', 'Do you like lasagna', 'yes I do ', NULL, 'read', '8aU8', 1715857549, 1, NULL, 2),
+('lJ3O', 'Are you satisfied with our services?', 'Yes I am', NULL, 'read', 'Q8W0', 1715329137, 1, NULL, 1),
+('Q1Dl', 'Do you prefer php or javascript?', 'Javascript', NULL, 'read', '0VrM', 1715857674, 1, NULL, 3),
+('ZIFW', 'Do you want a new car?', 'Yes I do', NULL, 'read', '8aU8', 1715857553, 1, NULL, 2);
 
 -- --------------------------------------------------------
 
@@ -63,6 +68,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`userId`, `userUserName`) VALUES
+('0VrM', 'BarackObama'),
+('8aU8', 'DonaldTrump'),
+('eZi4', 'GeorgeWBush'),
 ('Q8W0', 'JoeBiden');
 
 --
