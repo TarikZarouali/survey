@@ -21438,18 +21438,7 @@ hr.offcanvas-divider {
     z-index: 1
 }
 
-.chat-footer::before {
-    position: absolute;
-    background: rgba(255,255,255,.75);
-    -webkit-backdrop-filter: blur(10px) saturate(200%);
-    backdrop-filter: blur(10px) saturate(200%);
-    display: block;
-    height: 3.9375rem;
-    width: calc(100% + .5rem);
-    left: -.25rem;
-    bottom: 0;
-    content: ""
-}
+
 
 @-moz-document url-prefix() {
     .chat-footer::before {

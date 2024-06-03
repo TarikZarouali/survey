@@ -26,36 +26,49 @@ async function loadPage() {
     start.classList.add("d-none");
 
     drawSurveyData(userId);
-  } else if (parts[localhostIndex + 2] === "settings"){
+  } else if (parts[localhostIndex + 2] === "settings") {
     settingsTabLink.click();
     window.history.pushState(null, null, "/survey/" + "settings/");
+  } else {
+    surveysTabLink.click();
+    window.history.pushState(null, null, "/survey/" + "read/");
+    mainSurvey.classList.add("d-none");
+    start.classList.remove("d-none");
+    countSurveys();
   }
 }
 
-surveysTabLink.addEventListener("click", async () => {
+surveysTabLink.addEventListener("click", async (event) => {
+  event.preventDefault;
+
   window.history.pushState(null, null, "/survey/" + "read/");
 });
 
 settingsTabLink.addEventListener("click", async (event) => {
-  event.preventDefault
+  event.preventDefault;
   window.history.pushState(null, null, "/survey/" + "settings/");
   mainSurvey.classList.add("d-none");
   start.classList.add("d-none");
-});
-
-function redirectToRoot() {
-  window.location.href = URL_ROOT;
-}
-
-window.addEventListener("beforeunload", function (event) {
-  redirectToRoot();
 });
 
 async function saveMaxSurveysAmount() {
   try {
     const surveyAmount = document.getElementById("js-surveyAmount").value;
     localStorage.setItem("maxSurveys", surveyAmount);
-    redirectToRoot();
+
+    // Navigate to the survey page and reload the content
+    window.history.pushState(null, null, `/survey/`);
+    loadPage();
+
+    // Clear previous survey data
+    const surveyContainer = document.getElementById("survey");
+    if (surveyContainer) {
+      surveyContainer.innerHTML = "";
+    }
+
+    // Draw updated users
+    drawUsers();
+    countSurveys();
   } catch (error) {
     console.error("Error saving maxSurveys amount:", error);
   }
@@ -113,20 +126,22 @@ async function countSurveys() {
     if (response.status === "200") {
       const count = response.data;
       const surveysTabLink = document.querySelector("#js-surveysTabLink");
-      const countBadge = document.querySelector("#js-surveysCountBadge");
+      const countBadge = surveysTabLink.querySelector("#js-surveysCountBadge");
+      const surveyAmountIcon = surveysTabLink.querySelector(
+        ".js-survey-amount-icon"
+      );
 
-      if (count > 0) {
+      if (count <= 0) {
+        surveyAmountIcon.classList.remove("icon-badged");
+        countBadge.classList.add('d-none');
+      } else if (count >= 1) {
+        if (!surveyAmountIcon.classList.contains("icon-badged")) {
+          surveyAmountIcon.classList.add("icon-badged");
+          countBadge.classList.remove('d-none');
+        }
         countBadge.innerText = count;
-        countBadge.style.display = "block";
-      } else {
-        // Replace the HTML structure
-        surveysTabLink.innerHTML = `
-          <div class="icon icon-xl">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-square">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-          </div>`;
       }
+      surveysTabLink.classList.remove("active");
     } else {
       console.error("Error fetching surveys:", response.message);
     }
@@ -134,7 +149,6 @@ async function countSurveys() {
     console.error("Error fetching surveys:", error);
   }
 }
-
 
 async function changeSelectedSurveysStatus(status) {
   // Get all checkboxes
@@ -161,7 +175,17 @@ async function changeSelectedSurveysStatus(status) {
       const result = await response.json();
 
       if (result.status === 200) {
-        redirectToRoot();
+        window.history.pushState(null, null, `/survey/`);
+        loadPage();
+
+        // Clear previous survey data
+        const surveyContainer = document.getElementById("survey");
+        if (surveyContainer) {
+          surveyContainer.innerHTML = "";
+        }
+
+        countSurveys();
+        drawUsers();
       } else {
         console.error(`Status for survey ${surveyId} could not be updated`);
       }
@@ -301,7 +325,6 @@ async function drawSurveyData(surveyOwner) {
   try {
     const surveyData = await fetchSurveyData(surveyOwner);
     const surveys = surveyData.data;
-
     // Clear previous surveys
     surveyBodyElement.innerHTML = "";
 
@@ -757,8 +780,10 @@ window.addEventListener("popstate", function () {
   const currentURL = window.location.href;
   const parts = currentURL.split("/");
   const localhostIndex = parts.indexOf("localhost");
-  const surveyOwner = parts[localhostIndex + 2];
-  drawSurveyData(surveyOwner);
+  const surveyOwner = id;
+  if (surveyOwner) {
+    drawSurveyData(surveyOwner);
+  }
 });
 
 function updateDropdownText(text) {
