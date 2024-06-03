@@ -112,19 +112,20 @@ async function countSurveys() {
     const response = await call.json();
     if (response.status === "200") {
       const count = response.data;
-
       const surveysTabLink = document.querySelector("#js-surveysTabLink");
-
-      // Update the count badge
       const countBadge = document.querySelector("#js-surveysCountBadge");
 
       if (count > 0) {
         countBadge.innerText = count;
         countBadge.style.display = "block";
-      
       } else {
-        surveysTabLink.classList.remove("active");
-        countBadge.style.opacity = "0.1";
+        // Replace the HTML structure
+        surveysTabLink.innerHTML = `
+          <div class="icon icon-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-square">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>`;
       }
     } else {
       console.error("Error fetching surveys:", response.message);
@@ -133,6 +134,7 @@ async function countSurveys() {
     console.error("Error fetching surveys:", error);
   }
 }
+
 
 async function changeSelectedSurveysStatus(status) {
   // Get all checkboxes
