@@ -25,7 +25,6 @@ async function loadPage() {
     mainSurvey.classList.remove("d-none");
     start.classList.add("d-none");
 
-    console.log(userId);
     drawSurveyData(userId);
   } else if (parts[localhostIndex + 2] === "settings"){
     settingsTabLink.click();
@@ -116,16 +115,16 @@ async function countSurveys() {
 
       const surveysTabLink = document.querySelector("#js-surveysTabLink");
 
-      console.log(surveysTabLink);
       // Update the count badge
       const countBadge = document.querySelector("#js-surveysCountBadge");
 
       if (count > 0) {
         countBadge.innerText = count;
         countBadge.style.display = "block";
+      
       } else {
         surveysTabLink.classList.remove("active");
-        countBadge.style.display = "none";
+        countBadge.style.opacity = "0.1";
       }
     } else {
       console.error("Error fetching surveys:", response.message);
@@ -255,8 +254,10 @@ async function drawUsers() {
           statusElement.classList.add("bg-info");
 
           // Push the updated URL to the browser history
-          window.history.pushState(null, null, `/survey/read/${userId}`);
+          window.history.pushState(null, null, `/survey/read/${userId}/`);
           drawSurveyData(userId);
+
+          countSurveys();
         });
         surveyContainer.appendChild(surveyElement);
       });
@@ -615,26 +616,21 @@ async function deleteResponse(event, surveyId) {
           throw new Error("Network response was not ok");
         } else {
           const surveyContainer = event.target.closest(".survey-container");
-          console.log(surveyContainer);
           // Find the response element and remove it
           const responseElement = surveyContainer.querySelector(
             ".message.message-out"
           );
-          console.log(surveyContainer);
           if (responseElement) {
-            console.log(1);
             responseElement.remove();
           }
 
           // Show the response form again if no response is found
           const responseForm =
             surveyContainer.querySelector(".js-responseform");
-          console.log(responseForm);
           if (
             !surveyContainer.querySelector(".message.message-out") &&
             responseForm
           ) {
-            console.log(2);
             responseForm.classList.remove("d-none");
           }
         }
